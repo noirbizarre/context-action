@@ -1,0 +1,5 @@
+{
+  "eventName": "workflow_dispatch",
+  "ref": "refs/heads/main",
+  "payload": { "inputs": { "name": "release-42", "version": "1.2.3" } }
+}

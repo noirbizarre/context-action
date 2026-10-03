@@ -1,0 +1,5 @@
+{
+  "eventName": "push",
+  "ref": "refs/tags/v1.2.3",
+  "payload": { "ref": "refs/tags/v1.2.3" }
+}

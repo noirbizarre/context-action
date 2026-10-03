@@ -1,0 +1,22 @@
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]
+
+  # Note: dist/ is committed. Run `pnpm build` on Dependabot PRs so the
+  # "dist is up to date" CI check passes.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      runtime:
+        dependency-type: production
+      tooling:
+        dependency-type: development

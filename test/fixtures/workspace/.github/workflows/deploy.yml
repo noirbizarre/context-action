@@ -1,0 +1,26 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        required: true
+        options:
+          - staging
+          - production
+      dry_run:
+        type: boolean
+        default: false
+      replicas:
+        type: number
+        default: 1
+      version:
+        description: Untyped input defaults to string
+        required: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo hi

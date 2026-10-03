@@ -1,0 +1,66 @@
+name: Self test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        required: true
+        default: staging
+        options:
+          - staging
+          - production
+      dry_run:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./
+        id: context
+        with:
+          inputs: ${{ toJSON(inputs) }}
+          schema: .github/action-context.schema.json
+
+      - name: Check outputs
+        env:
+          INPUTS: ${{ steps.context.outputs.inputs }}
+          VALID: ${{ steps.context.outputs.valid }}
+        run: |
+          echo "$INPUTS" | jq -e '.environment | IN("staging", "production")'
+          echo "$INPUTS" | jq -e '.dry_run | type == "boolean"'
+          test "$VALID" = "true"
+
+  ref:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./
+        id: context
+
+      - name: Check outputs
+        env:
+          REF: ${{ steps.context.outputs.ref }}
+          CONTEXT: ${{ steps.context.outputs.context }}
+        run: |
+          echo "$REF" | jq -e '.ref.full | startswith("refs/")'
+          echo "$CONTEXT" | jq -e '.inputs.source == "none"'
+
+  call:
+    uses: ./.github/workflows/self-test-called.yml
+    with:
+      environment: production
+      dry_run: true
+      replicas: 3

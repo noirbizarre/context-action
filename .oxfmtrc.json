@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "semi": false,
+  "printWidth": 100,
+  "ignorePatterns": [
+    "dist",
+    "pnpm-lock.yaml",
+    ".opencode",
+    "test/fixtures/workspace/schemas/malformed.json"
+  ]
+}

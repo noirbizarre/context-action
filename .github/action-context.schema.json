@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "environment": { "type": "string", "enum": ["staging", "production"] },
+    "dry_run": { "type": "boolean" },
+    "replicas": { "type": "number", "minimum": 1 },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" }
+  },
+  "required": ["environment"],
+  "additionalProperties": false
+}

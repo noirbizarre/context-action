@@ -1,0 +1,12 @@
+{
+  "eventName": "workflow_dispatch",
+  "ref": "refs/heads/main",
+  "payload": {
+    "inputs": {
+      "environment": "production",
+      "dry_run": "true",
+      "replicas": "3",
+      "version": "1.2.3"
+    }
+  }
+}

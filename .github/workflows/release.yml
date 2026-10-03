@@ -1,0 +1,31 @@
+name: Release
+
+# Moves the floating major tag (e.g. v1) to the released tag so that
+# `uses: noirbizarre/context-action@v1` tracks the latest v1.x.y release.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  update-major-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Move the major tag
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          if [[ ! "$TAG" =~ ^v([0-9]+)\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Tag '$TAG' is not a vMAJOR.MINOR.PATCH release; skipping."
+            exit 0
+          fi
+          major="v${BASH_REMATCH[1]}"
+          git tag -f "$major" "$TAG"
+          git push -f origin "refs/tags/$major"

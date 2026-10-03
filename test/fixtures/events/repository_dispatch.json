@@ -1,0 +1,13 @@
+{
+  "eventName": "repository_dispatch",
+  "ref": "refs/heads/main",
+  "payload": {
+    "action": "deploy",
+    "client_payload": {
+      "environment": "production",
+      "dry_run": "true",
+      "count": "3",
+      "nested": { "a": "1" }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "eventName": "pull_request",
+  "ref": "refs/pull/42/merge",
+  "payload": {
+    "number": 42,
+    "pull_request": {
+      "head": { "ref": "feature/login", "repo": { "full_name": "octo/repo" } },
+      "base": { "ref": "main", "repo": { "full_name": "octo/repo" } }
+    }
+  }
+}

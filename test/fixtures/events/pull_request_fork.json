@@ -1,0 +1,11 @@
+{
+  "eventName": "pull_request",
+  "ref": "refs/pull/43/merge",
+  "payload": {
+    "number": 43,
+    "pull_request": {
+      "head": { "ref": "patch-1", "repo": { "full_name": "contributor/repo" } },
+      "base": { "ref": "main", "repo": { "full_name": "octo/repo" } }
+    }
+  }
+}

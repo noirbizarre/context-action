@@ -1,0 +1,35 @@
+name: Self test (called)
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+      dry_run:
+        type: boolean
+        default: false
+      replicas:
+        type: number
+        default: 1
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: ./
+        id: context
+        with:
+          inputs: ${{ toJSON(inputs) }}
+          schema: .github/action-context.schema.json
+
+      - name: Check normalized inputs
+        env:
+          INPUTS: ${{ steps.context.outputs.inputs }}
+        run: |
+          echo "$INPUTS" | jq -e '. == {"dry_run": true, "environment": "production", "replicas": 3}'

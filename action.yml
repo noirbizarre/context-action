@@ -1,0 +1,46 @@
+name: Context Action
+description: >-
+  Normalize event-dependent GitHub Actions concepts (workflow inputs, git references),
+  optionally validate them with JSON Schema, and show the result in the Job Summary.
+author: noirbizarre
+branding:
+  icon: check-square
+  color: blue
+
+inputs:
+  schema:
+    description: >-
+      JSON Schema describing the normalized inputs object. Either a path to a JSON file
+      in the workspace, or an inline JSON document (starting with `{`). Optional.
+    required: false
+  inputs:
+    description: >-
+      Typed workflow inputs as JSON. Use `${{ toJSON(inputs) }}`. Required to read
+      `workflow_call` inputs and recommended for `workflow_dispatch` (preserves declared types).
+    required: false
+  client-payload:
+    description: >-
+      Set to `true` to expose `repository_dispatch` `client_payload` as inputs
+      (source `repository_dispatch`, values are never coerced).
+    required: false
+    default: "false"
+  summary:
+    description: Set to `false` to skip writing the Job Summary (for example if inputs may be sensitive).
+    required: false
+    default: "true"
+
+outputs:
+  inputs:
+    description: Normalized inputs as JSON
+  context:
+    description: Normalized context as JSON
+  event:
+    description: GitHub event name
+  ref:
+    description: Normalized reference as JSON
+  valid:
+    description: Whether validation succeeded ("true" or "false")
+
+runs:
+  using: node24
+  main: dist/index.js

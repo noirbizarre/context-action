@@ -1,0 +1,5 @@
+{
+  "type": "object",
+  "properties": { "environment": { "type": "string", "enum": ["staging"] } },
+  "required": ["environment"]
+}

@@ -1,0 +1,5 @@
+{
+  "eventName": "push",
+  "ref": "refs/heads/main",
+  "payload": { "head_commit": { "message": "must never appear anywhere" } }
+}

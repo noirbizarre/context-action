@@ -1,0 +1,5 @@
+{
+  "eventName": "some_future_event",
+  "ref": "",
+  "payload": { "anything": "goes" }
+}
