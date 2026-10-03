@@ -15,7 +15,7 @@ inputs:
     required: false
   inputs:
     description: >-
-      Typed workflow inputs as JSON. Use `${{ toJSON(inputs) }}`. Required to read
+      Typed workflow inputs as JSON. Pass the expression toJSON(inputs) (see README). Required to read
       `workflow_call` inputs and recommended for `workflow_dispatch` (preserves declared types).
     required: false
   client-payload:
