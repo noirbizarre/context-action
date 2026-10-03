@@ -50,15 +50,39 @@ validation and summary do not change.
 
 ### Why `inputs: ${{ toJSON(inputs) }}`?
 
-A JavaScript action cannot see declared input types. `${{ toJSON(inputs) }}` is evaluated by
-GitHub and carries correctly typed values for both `workflow_dispatch` and `workflow_call`, so
-both produce **identical** output. In a reusable workflow `github.event_name` is the _caller's_
-event, so this input is also the only reliable signal that the run is a `workflow_call`.
+`@actions/core` and `@actions/github` do not expose workflow inputs, because the runner never
+hands them to the action process:
 
-Without it, `workflow_dispatch` falls back to the event payload (all strings) and reads the type
-declarations (`on.workflow_dispatch.inputs.<name>.type`) from the checked-out workflow file
-(`GITHUB_WORKFLOW_REF`). This requires `actions/checkout`; if the file cannot be read a warning
-is emitted and values stay strings. `workflow_call` without the `inputs` input yields no inputs.
+- `@actions/github`'s `context.payload` is the **raw webhook payload**: the JSON file at
+  `GITHUB_EVENT_PATH`, parsed as-is.
+- `@actions/core`'s `getInput()` reads the action's **own** `with:` values (`INPUT_*` environment
+  variables), not the workflow's inputs.
+- The `inputs` context (like `github`, `vars`, `needs` or `matrix`) is an _expression context_,
+  evaluated by the runner inside `${{ }}`. It is not serialized into the environment or a file,
+  so an action only sees it if the workflow passes it through `with:`.
+
+What the event payload does contain is not enough:
+
+- **`workflow_dispatch`**: `payload.inputs` exists, but every value is a string (`true` arrives
+  as `"true"`) and the declared types are not included.
+- **`workflow_call`**: the payload is the _caller's_ event (`push`, `workflow_dispatch`, ...),
+  without the called workflow's inputs, and `github.event_name` is the caller's event too. The
+  action cannot even tell that it runs in a reusable workflow.
+
+`${{ toJSON(inputs) }}` is evaluated by GitHub and carries correctly typed values for both
+events, so equivalent `workflow_dispatch` and `workflow_call` invocations produce **identical**
+output. It is also the only reliable signal that the run is a `workflow_call`.
+
+It cannot be defaulted in `action.yml`: the `inputs` context is not available in action
+metadata (a default of `${{ toJSON(inputs) }}` makes the action fail to load).
+
+|                     | With `inputs: ${{ toJSON(inputs) }}`                         | Without                                                                                                                                                                                                                                                                          |
+| ------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `workflow_dispatch` | Typed values, source `workflow_dispatch`, no checkout needed | Payload strings, types read from the checked-out workflow file (`GITHUB_WORKFLOW_REF`, needs `actions/checkout`). If the file cannot be read a warning is emitted and values stay strings. The file is the one on the checked-out ref, which may differ from the triggering ref. |
+| `workflow_call`     | Typed values, source `workflow_call`                         | Not detectable: no inputs, source `none`                                                                                                                                                                                                                                         |
+
+**Recommendation:** always pass it. It is only optional for a plain `workflow_dispatch`
+workflow that also checks out its own repository.
 
 ## Normalization rules
 
@@ -149,12 +173,12 @@ Inline (anything starting with `{`):
 
 ## Action inputs
 
-| Input            | Description                                                           | Default |
-| ---------------- | --------------------------------------------------------------------- | ------- |
-| `inputs`         | Typed workflow inputs: `${{ toJSON(inputs) }}`                        |         |
-| `schema`         | Path to a JSON Schema file in the workspace, or an inline JSON Schema |         |
-| `client-payload` | `true` to expose `repository_dispatch` `client_payload` as inputs     | `false` |
-| `summary`        | `false` to skip the Job Summary                                       | `true`  |
+| Input            | Description                                                                         | Default |
+| ---------------- | ----------------------------------------------------------------------------------- | ------- |
+| `inputs`         | Typed workflow inputs: `${{ toJSON(inputs) }}` ([why?](#why-inputs--tojsoninputs-)) |         |
+| `schema`         | Path to a JSON Schema file in the workspace, or an inline JSON Schema               |         |
+| `client-payload` | `true` to expose `repository_dispatch` `client_payload` as inputs                   | `false` |
+| `summary`        | `false` to skip the Job Summary                                                     | `true`  |
 
 ## Outputs
 
@@ -307,7 +331,7 @@ supplied (for instance `"true"` stays a string unless your schema says otherwise
 ## Limitations
 
 - `workflow_call` inputs need `inputs: ${{ toJSON(inputs) }}`; without it the action reports
-  source `none`.
+  source `none` ([why](#why-inputs--tojsoninputs-)).
 - The `workflow_dispatch` fallback reads the workflow file from the checked-out ref, which may
   differ from the ref the run was triggered on. Prefer `toJSON(inputs)`.
 - `client_payload` is exposed as-is; no declared types exist for it.
